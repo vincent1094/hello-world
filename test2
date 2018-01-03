@@ -1,0 +1,277 @@
+OOP345 Fall 2017 Exam Review
+
+Things to know for the exam:
+
+1. lambda functions
+  [capture] (args,...) -> return_type { code; ...}
+  
+  capture can be 
+    []     - capture nothing
+    [&]    - capture everything by reference (pointer)
+    [=]    - capture everything by value (saves a copy when the lambda is created)
+    [&x,y] - capture x by ref and y by value (makes a copy of y)
+
+  The (args, ...) augument list is optional.  It is not required if there are not any arguments.
+
+  The return type '-> return-type' eg '-> int' is required if the compiler cannot figure out the return type.
+
+
+2. function and class templates
+
+3.  callable objects
+  3.1 - functions
+  3.2 - lambda
+  3.3 - function objects (functors) - classes with an operator()
+  3.4 - pointers to callable objects 
+        - C   eg int (*f) (int i, float d, double d) 
+        - C++ eg std::function<int(int,float,double d)> f; 
+  3.5 - bind: return a callable object pointer that does not have arguments that points to callable object with arguments
+        - eg
+            auto fp = bind(sqrt,101.);
+            cout << "sqrt of 101. is " << fp() << "\n";
+
+        NOTE if the function expects a call by reference parameter, ref(parameter) must be used with bind:
+          - eg
+              int fun(int& x) { ...; } // parm ref is call-by-reference (a pointer)
+              int xxx = 123;
+              auto fp = bind(fun,ref(xxx));  // tell bind to pass the address of xxx, not the value of xxx.
+              cout << "fun applied to ref parm xxx is " << fp() << "\n";
+
+              bind(fun,xxx) returns a function pointer where the parameter is the value, 123, not the address.
+              In perfect world, calling the function pointer returned by bind would 
+              seg-fault when the function attempts to access memory at mamory 123.
+
+
+4. Notable std:: algorithms
+The std:: family of algorithms are a set of function template iterator for-loop or while-loop wrappers.  
+Most wrap a single loop.  std::sort wraps several loops.
+
+  std::accumulate -> sum, add , or accumulate a range of values
+
+    template <class InputIterator, class T>
+    T accumulate (InputIterator first, InputIterator last, T init)
+    {
+      while (first!=last) {
+        init = init + *first;  // or: init=binary_op(init,*first) for the binary_op version
+        ++first;
+      }
+      return init;
+    }
+
+  std::find - find a given value
+
+    template <class InputIterator, class T>
+    T find (InputIterator first, InputIterator last, T value)
+    {
+      while (first!=last) {
+        if(*first == value) 
+          return first;
+        ++first;
+      }
+      return init;
+    }
+
+
+  NOTE the sum and the return type is determined by the 'init' type.  If the 'init' value is '0', an interger, the sum and return type is integer.
+
+  std::accumulate with a function -> use the function to sum, add , or accumulate 
+    template <class InputIterator, class T>
+    T accumulate (InputIterator first, InputIterator last, T init)
+    template <class InputIterator, class T, class BinaryOperation>
+     T accumulate (InputIterator first, InputIterator last, 
+                   T init, 
+                   BinaryOperation binary_op)
+    {
+      while (first!=last) {
+        init = binary_op(init,*first);
+        ++first;
+      }
+      return init;
+    }
+
+  std::for_each execute a function on each value of a range of values
+
+    template<class InputIterator, class Function>
+      Function for_each(InputIterator first, InputIterator last, Function fn)
+    {
+      while (first!=last) {
+        fn (*first);
+        ++first;
+      }
+      // return fn;      // prior to C++11
+      return move(fn);   // C++11
+    }
+
+  std::transform apply a function to one or two input series
+    template <class InputIterator, class OutputIterator, class UnaryOperation>
+    OutputIterator transform (InputIterator first1, InputIterator last1,
+                              OutputIterator result, 
+                              UnaryOperation op);
+
+    while(first1 != last1)
+      *result++ = op(*first++);
+
+
+    template <class InputIterator1, class InputIterator2, class OutputIterator, class BinaryOperation>
+    OutputIterator transform (InputIterator1 first1, InputIterator1 last1,
+                            InputIterator2 first2, 
+                            OutputIterator result,
+                            BinaryOperation binary_op);
+    while(first1 != last1)
+      *result++ = binary_op(*first++++,*first2++);
+
+5. What are the advantages of using either std::vector or std::list?
+     Vector random access v[index] is instantaneous.  
+     Inserts and deletes are expensive.
+
+     List inserts and deletes are fast.   Create or delete a node and fix the pointers.
+     Random access is very expensive.  
+     One needs to walk the list from the beginning counting until the desired index is found.
+
+6. emplace, emplace_front, emplace_back
+   consider
+     class X { 
+     public:
+       X(arg) { ...}
+     };
+    vector<X> v;
+
+    v.push_back(X(...));
+
+  First the compiler generates a tempory instance of X by calling the contructor with the ... arguments.
+  Second it calls the move contructor to create a copy of the temporary instance inside the vector. 
+  Third it calls the destroctor to destroy the temperary instance.
+
+  This is dumb.  Why create a temporary, move construct a copy in the vector and delete the temporary?
+
+  Why not just create the instance on the vector.
+
+  That's what emplace, emplace_back, and emplace_front do.
+
+  replace
+    v.push_back(X(...));
+  with
+    v.emplace_back(...);  // The compiler calls the class X ctor with ... arguments.
+
+  Same thing for push(X(...)), and push_front(X(...)).    Recall std::stack and std::queue only have a push(...) member function
+
+  Use emplace(...) and emplace_front(...).  The compiler will construct the class X instance in the proper position
+
+
+7. What are the advantages of using either a function object or a lambda function?
+
+8. complete understanding of accessing a vector by indices, iterators, or range-based for.  Printing a vector<vector<string>> demonstrates complet mastery of these access methods.
+
+9. An appreciation of smart pointer
+
+10. know how to use iterators STL iterators and containers
+    list<string> itemList;  // or vector<string> itemList;
+    itemList.begin().insert("...");
+    itemList.begin()+2.insert("...");
+    itemList.end().insert("...");
+    itemList.push_back("...");
+    itemList.push_front("...");
+    auto iterator = find(itemList.begin(), itemList.end(), "some value");
+    if(iterator != itemList.end()) erase(iterator);
+
+11 how to code a composition (workshops 2 + 5)
+   class Part {...};
+   class Composition {
+     vector<Part*> partList;
+   public:
+     addPart(Part& p) { partList.push_back(&p); }
+     bool havePart(Part& p) { find(partList.begin(), partList.end(), &p) != partList.end(); }
+   };
+
+12 how to code a association
+  class Student; class College;
+  class Student {
+    vector<College> colegeList;
+    ...
+  };
+  class College {
+    list<Student> studentList;
+    ...
+  };
+
+13 how to code a aggregation
+  class Duck; class Pond;
+  class Duck {
+    string color;
+  public:
+  Duck(string c) : color(c) {...}
+  };
+  class Pond {
+    list<Duck> duckList;
+  public:
+    void addDuck(Duck& d) { duckList.push_back(d); }
+    void removeDuck(Duck& d) { 
+       auto iterator = find(duckList.begin(), duckList.end(), &p);
+       if(iterator != duckList.end()) erase(iterator);
+    }
+  };
+
+14. threads
+  std::thread::hardware_concurrency() - returns the number of CPU cores on the computer.
+
+    tid = thread(function, arg1, arg2, ...);
+    ...
+    tid.join();  // wait for the thread to exit
+  or
+    tid = thread(function, arg1, arg2, ...);
+    tid.dettach();  // informt he operatuong system you will not be waiting for the thread to finish
+
+  future<T> fut;   // want to run a function as a thread.  The function returns a value of type 'T'
+  fut = aysnc( alunch::deferred, function, arg1, arg2, ...);
+  ...
+  cout << fut.get() << "\n";  // retrieve value returned by thread
+
+  NOTE if the the thread or async function expects a call by reference parameter, ref(parameter) must be used.  
+  It is exactly like bind.  The compiler needs to know the function expects a reference parameter, not the value.
+
+Good things to know outside the scope of 345
+  mutex
+    mutex m;
+    m.lock(); // prevent race conditions
+    m.unlock();
+    bool m.trylock();  // prevent deadlock - returns true if lock aquired, false if lock is busy
+    { // smart lock for mutex m
+      std::unique_lock<std::mutex> lck (m)
+      someFunction(...);  // that might throw
+    } //  unlocks m automatically when lck goes out of scope (just like a smart pointer)
+
+  std::pair<KEY,VALUE> p(key,value);   // p.first is 'key', p.second is 'valuev'
+  std::make_pair       p(key,value);   // create a pair 'p' if compiler can figure out the correct types
+
+  map<KEY,VALUE> - dictionary, an indexed key-value table that uses std::pair/std::make_pair
+    eg map<string,string> dictionary;
+    dictionary.insert(pair<string,string>("fish","cod"));
+    dictionary.insert(pair<string,string>("bird","eagle"));
+    dictionary.insert(pair<string,string>("animal","dog"));
+    dictionary.insert(make_pair(string("airplane"),string("B777")));
+    dictionary[string("key")] = string("value");
+
+    for(auto p=dictionary.begin(); p!=dict.end(); ++p) // iterator
+      std::cout << "  " << p->first << " -> " << p->second << std::endl;
+
+    for(auto e : dictionary) / range-based for
+      std::cout << "  " << e.first << " -> " << e.second << std::endl;
+
+    TWO ways to access the dictionary and handle if result not found:
+
+      METHOD 1:
+        string key = "rat"
+        auto iterator = dictionary.find(key);
+        if(iterator != distionary.end())
+          cout << iterator->first << " = " <<iterator->second << "\n";
+        else
+          cout << key << " not found\n";
+
+      METHOD 2:
+        string key = "rat"
+        try {
+          string value = dictionary[key];            // throws if not found
+          cout << key << " = " << value << "\n";
+        } catch(const std::exception& e) {
+          cout << key << " not found\n";
+        }
