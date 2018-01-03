@@ -2,3 +2,50 @@ What are the benefits of using standard vectors and standard list:
 Vectors are good for random read access and insertion and deletion in the back , but bad for insertions and deletions in the front or any other position (linear time, as items have to be moved). Vectors are usually laid out contiguously in memory, so traversing one is efficient because the CPU memory cache gets used effectively.
 Linked lists on the other hand are good for inserting and deleting items in the front or back (constant time). Linked lists are also very simple to implement, which makes them a popular data structure.
 
+Emplace vs Push:
+1. push_back accepts only object of the type if the constructor accept more than one arguments,whereas emplace_back accept arguments of the constructor of the type.
+2. Efficiency:
+- built-in type:If the type is a built-in type there is no difference in efficiency between push_back and emplace_back function.
+- user-defined type: with emplace_back function call the object is created directly into the vector.And hence there is no need for copying the object into the vector. The copying process is omitted in emplace_back function call. > More efficient
+
+Function Object vs Lambda:
+- A functor should be used when you need to create a closure. Since functors are objects, you can maintain an internal state and pass parameters inside the closure.
+- A lambda is essentially a functor, without an explicit typename. The capture list of a lambda is its member if it were implemented as a functor instead. Note that you can overload operator() for a functor but not a lambda.
+
+ Method 1 - range-based for loop:
+
+      for(auto line : data) {
+
+        for(auto field : line)
+
+          cout << field << " ";
+
+        cout << "\n";
+
+      }
+
+ Method 2 - conventional for loop
+
+ for(int line = 0; line < data.size(); line++) {
+
+        for(int field = 0; field < data[line].size(); field++)
+
+          cout << data[line][field] << " ";
+
+        cout << "\n";
+
+      }
+
+ Method 3 - iterator for loop (can also use iterators with STL for_each method)
+
+ for(auto line = data.begin(); line < data.end(); line++) {
+
+        for(auto field = <line>begin(); field <line>end(); field++)
+
+          cout << *field << " ";
+
+        cout << "\n";
+
+      }
+      
+Smart Pointer: Smart pointer is a simple template class that store the result of calling new inside the class. So it is a class without a scope, it calls a destructor on the value that u pass to it when u create it.
