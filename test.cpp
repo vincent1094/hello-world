@@ -50,6 +50,28 @@
       }
   };
   
+
+ class Motor{ };
+  class Car{
+    Motor* motor;  
+  public:
+    Car()         : motor(nullptr) {}
+    Car(Motor* m) : motor(m)       {}
+    void newMotor(Motor* m) { 
+     if(motor) delete motor; 
+     motor = m; 
+    }
+    Motor* pullMotor() { 
+     Motor* ret = motor; 
+     motor = nullptr; 
+     return ret; 
+    }
+    ~Car() { 
+     if(motor) 
+      delete motor; 
+    }
+ };
+
   int main() {
       House myHouse;
       myHouse.AddRoom("kitchen");
