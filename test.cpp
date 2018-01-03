@@ -44,7 +44,7 @@
   class Pond {
       std::list<Duck> ducks;
   public:
-      void AddDuck(Duck duck)
+      void AddDuck(Duck& duck)
       {
           ducks.push_back(duck);
       }
