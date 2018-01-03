@@ -1,0 +1,4 @@
+What are the benefits of using standard vectors and standard list:
+Vectors are good for random read access and insertion and deletion in the back , but bad for insertions and deletions in the front or any other position (linear time, as items have to be moved). Vectors are usually laid out contiguously in memory, so traversing one is efficient because the CPU memory cache gets used effectively.
+Linked lists on the other hand are good for inserting and deleting items in the front or back (constant time). Linked lists are also very simple to implement, which makes them a popular data structure.
+
